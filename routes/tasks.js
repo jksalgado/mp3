@@ -1,7 +1,7 @@
 // routes/tasks.js
 const express = require('express');
-const Task = require('../models/Task');
-const User = require('../models/User');
+const Task = require('../models/task');
+const User = require('../models/user');
 const { buildMongooseQuery, ok, fail } = require('./_utils');
 
 module.exports = function (_router) {
