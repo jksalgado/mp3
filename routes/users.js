@@ -104,4 +104,37 @@ module.exports = function(router) {
         if (updateOps.length) await Promise.all(updateOps);
       }
 
-      //
+      // Replace user
+      user.name = name;
+      user.email = email;
+      user.pendingTasks = newPending;
+      await user.save();
+
+      return ok(res, user);
+    } catch (e) {
+      if (e && e.code === 11000) return fail(res, 400, 'Email must be unique');
+      return fail(res, 500, 'Internal Server Error');
+    }
+  });
+
+  // DELETE /api/users/:id (unassign their tasks)
+  r.delete('/:id', async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id).exec();
+      if (!user) return fail(res, 404, 'User Not Found', 'User not found.');
+
+      await Task.updateMany(
+        { assignedUser: String(user._id) },
+        { $set: { assignedUser: '', assignedUserName: 'unassigned' } }
+      );
+
+      await user.deleteOne();
+      // 204 per spec is fine, but we’ll return 200 with message+data=null for consistency
+      return ok(res, null, 200, 'Deleted');
+    } catch (_) {
+      return fail(res, 500, 'Internal Server Error');
+    }
+  });
+
+  return r;
+};

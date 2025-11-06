@@ -151,4 +151,17 @@ module.exports = function (_router) {
       await task.deleteOne();
 
       if (assignedUser) {
-        await User.upd
+        await User.updateOne(
+          { _id: assignedUser },
+          { $pull: { pendingTasks: String(task._id) } }
+        );
+      }
+
+      return ok(res, null, 200, 'Deleted');
+    } catch (_) {
+      return fail(res, 500, 'Internal Server Error');
+    }
+  });
+
+  return r;
+};
